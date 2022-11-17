@@ -1,19 +1,14 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
-
 trigger:
-- main
-
+    - main
 pool:
-  vmImage: ubuntu-latest
+    vmImage: ubuntu-latest
 
 steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
-
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+    -task: Bash@3
+        displayName: Install_Run_SAST
+        inputs:
+            targetType: 'inline'
+            script: |
+            env | grep -E "AZURE_HTTP_USER_AGENT|BUILD_BUILDID" > /tmp/env
+            docker pull registry.fortidevsec.forticloud.com/fdevsec_sast:latest
+            docker run --rm --env-file /tmp/env --mount type=bind,source="$PWD",target=/scan registry.fortidevsec.forticloud.com/fdevsec_sast:latest
